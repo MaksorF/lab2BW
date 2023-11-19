@@ -1,4 +1,6 @@
 import argparse
+import os
+import sys
 import platform
 import subprocess
 import psutil
@@ -34,11 +36,31 @@ def get_host_name():
     host_name = platform.node()
     print(f"Host Name: {host_name}")
 
+
 def get_system_info():
     system_info = f"System: {platform.system()} {platform.release()}\n"
     system_info += f"Liczba rdzeni CPU: {psutil.cpu_count(logical=False)}\n"
-    system_info += f"Pamięć RAM: {round(psutil.virtual_memory().total / (1024. ** 3), 2)} GB"
-    print(f"Informacje systemowe: {system_info}")
+
+    # Dodajemy obsługę różnych systemów operacyjnych
+    if platform.system() == 'Windows':
+        try:
+            ram_info = round(psutil.virtual_memory().total / (1024. ** 3), 2)
+            system_info += f"Pamięć RAM: {ram_info} GB"
+        except Exception as e:
+            system_info += f"Błąd pobierania informacji o pamięci RAM: {e}"
+    else:
+        system_info += "Pamięć RAM: Niedostępna na tym systemie."
+
+    # Zapisujemy wynik do zmiennej
+    result = f"Informacje systemowe: {system_info}\n"
+    # Dekodujemy wynik z cp1250 (może być inny, w zależności od systemu)
+    decoded_result = result.encode('cp1250').decode('utf-8')
+
+    # Wydrukuj zdekodowany wynik
+    sys.stdout.write(decoded_result)
+
+# Dodatkowe informacje, aby pomóc w zrozumieniu problemu
+print(f"Kodowanie znaków w sys.stdout: {sys.stdout.encoding}")
 
 def main():
     parser = argparse.ArgumentParser(description="Aplikacja do sprawdzania informacji o komputerze i połączeniu sieciowym")
